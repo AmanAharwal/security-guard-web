@@ -28,8 +28,8 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <input type="text" id="date-range" name="date" class="form-control" value="{{ request('date') }}"
-                        placeholder="Select Date Range" autocomplete="off">
+                    <input type="text" id="date-range" name="date" class="form-control"
+                        value="{{ request('date') }}" placeholder="Select Date Range" autocomplete="off">
                 </div>
                 <div class="col-md-2">
                     <button type="button" id="searchBtn" class="btn btn-primary">Search</button>
@@ -139,7 +139,15 @@
                     }
                 },
                 {
-                    data: 'user.first_name'
+                    data: 'user',
+                    render: function(data) {
+                        if (data) {
+                            let firstName = data.first_name ? data.first_name : '';
+                            let surname = data.surname ? data.surname : '';
+                            return `${firstName} ${surname}`.trim();
+                        }
+                        return 'N/A';
+                    }
                 },
                 {
                     data: 'client.client_name'

@@ -7,7 +7,7 @@
                 <option value="" disabled selected>Select Guard</option>
                 @foreach($securityGuards as $securityGuard)
                 <option value="{{ $securityGuard->id }}" @selected(isset($guardRoaster->guard_id) && $guardRoaster->guard_id == $securityGuard->id)>
-                    {{ $securityGuard->first_name .' '.$securityGuard->sure_name }}
+                    {{ $securityGuard->first_name .' '.$securityGuard->surname }}
                 </option>
                 @endforeach
             </select>

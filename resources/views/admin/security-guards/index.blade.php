@@ -106,7 +106,7 @@
                                         <th>First Name</th>
                                         <th>Middle Name</th>
                                         <th>Surname</th>
-                                        <th>Phone number</th>
+                                        <th>Phone</th>
                                         <th>Leave Balance</th>
                                         <th>Status</th>
                                         @canany(['edit security guards', 'delete security guards'])

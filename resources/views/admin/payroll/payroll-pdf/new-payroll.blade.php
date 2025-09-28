@@ -163,7 +163,7 @@
         </tr>
     </table>
     <br>
-    <table>
+    {{-- <table>
         <tr>
             <th>Bank Name</th>
             <th>Account No.</th>
@@ -174,7 +174,7 @@
             <td></td>
             <td>{{ $payroll->gross_salary_earned - $totalAmount }}</td>
         </tr>
-    </table>
+    </table> --}}
     <br>
     <table>
         <tr>

@@ -117,6 +117,18 @@ class SecurityGuardController extends Controller
                     return ($leave->type == 'Half Day') ? 0.5 : 1;
                 });
             $guard['pendingLeaveBalance'] =  max(0, $paidLeaveBalanceLimit - $approvedLeaves);
+
+            $VacationpaidLeaveBalanceLimit = (int) setting('vacation_leaves') ?: 10;
+            $approvedVacationLeaves = Leave::where('guard_id', $guard->id)
+                ->where('status', 'Approved')
+                ->where('leave_type', 'Vacation Leave')
+                ->whereYear('date', $currentYear)
+                ->get()
+                ->sum(function ($leave) {
+                    return ($leave->type == 'Half Day') ? 0.5 : 1;
+                });
+
+            $guard['vacationLeaveBalance'] = max(0, $VacationpaidLeaveBalanceLimit - $approvedVacationLeaves);
         }
 
         $data = [

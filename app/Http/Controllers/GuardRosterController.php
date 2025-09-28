@@ -227,34 +227,80 @@ class GuardRosterController extends Controller
         //
     }
 
-    public function edit($id)
+    // public function edit($id)
+    // {
+    //     if (!Gate::allows('edit guard roster')) {
+    //         abort(403);
+    //     }
+    //     $guardRoaster = GuardRoster::where('id', $id)->first();
+    //     $userRole = Role::where('id', 3)->first();
+    //     $securityGuards = User::whereHas('roles', function ($query) use ($userRole) {
+    //         $query->where('role_id', $userRole->id);
+    //     })->where('status', 'Active')->latest()->get();
+
+    //     $clients = Client::latest()->get();
+    //     $query = ClientSite::where('status', 'Active')->latest();
+    //     if (Auth::check() && Auth::user()->hasRole('Manager Operations')) {
+    //         $userId = Auth::id();
+    //         $query->where('manager_id', $userId);
+    //     }
+
+    //     $clientSites = $query->get();
+
+    //     $start_time = Carbon::createFromFormat('H:i:s', $guardRoaster->start_time)->format('h:iA');
+    //     $end_time = Carbon::createFromFormat('H:i:s', $guardRoaster->end_time)->format('h:iA');
+
+    //     $guardRoaster['start_time'] = $start_time;
+    //     $guardRoaster['end_time']   = $end_time;
+    //     $guardTypes = RateMaster::latest()->get();
+
+    //     return view('admin.guard-roster.edit', compact('securityGuards', 'clients', 'guardRoaster', 'clientSites', 'guardTypes'));
+    // }
+
+    public function edit($id, Request $request)
     {
         if (!Gate::allows('edit guard roster')) {
             abort(403);
         }
-        $guardRoaster = GuardRoster::where('id', $id)->first();
+
+        $guardRoaster = GuardRoster::findOrFail($id);
         $userRole = Role::where('id', 3)->first();
+
         $securityGuards = User::whereHas('roles', function ($query) use ($userRole) {
             $query->where('role_id', $userRole->id);
         })->where('status', 'Active')->latest()->get();
 
         $clients = Client::latest()->get();
         $query = ClientSite::where('status', 'Active')->latest();
+
         if (Auth::check() && Auth::user()->hasRole('Manager Operations')) {
-            $userId = Auth::id();
-            $query->where('manager_id', $userId);
+            $query->where('manager_id', Auth::id());
         }
 
         $clientSites = $query->get();
 
-        $start_time = Carbon::createFromFormat('H:i:s', $guardRoaster->start_time)->format('h:iA');
-        $end_time = Carbon::createFromFormat('H:i:s', $guardRoaster->end_time)->format('h:iA');
+        $guardRoaster->start_time = $guardRoaster->start_time
+            ? Carbon::createFromFormat('H:i:s', $guardRoaster->start_time)->format('h:i A')
+            : null;
 
-        $guardRoaster['start_time'] = $start_time;
-        $guardRoaster['end_time']   = $end_time;
+        $guardRoaster->end_time = $guardRoaster->end_time
+            ? Carbon::createFromFormat('H:i:s', $guardRoaster->end_time)->format('h:i A')
+            : null;
+
         $guardTypes = RateMaster::latest()->get();
 
-        return view('admin.guard-roster.edit', compact('securityGuards', 'clients', 'guardRoaster', 'clientSites', 'guardTypes'));
+        $selectedDate = $request->query('date');
+        $selectedField = $request->query('field');
+
+        return view('admin.guard-roster.edit', compact(
+            'securityGuards',
+            'clients',
+            'guardRoaster',
+            'clientSites',
+            'guardTypes',
+            'selectedDate',
+            'selectedField'
+        ));
     }
 
     public function update(Request $request, $id)
@@ -656,6 +702,7 @@ class GuardRosterController extends Controller
 
             $guardTypes = $item->guardType->guard_type ?? '';
             $formattedGuardRoasters[$guard_id][$client_site_id][$date][] = [
+                'id'          => $item->id,
                 'guard_name' => $item->user->first_name . ' ' . optional($item->user)->surname,
                 'client_name' => $item->client->client_name,
                 'location_code' => $item->clientSite->location_code,
@@ -675,9 +722,22 @@ class GuardRosterController extends Controller
                     'guardType' => implode(', ', array_column($dates[array_key_first($dates)], 'guard_types')),
                 ];
 
+                // foreach ($dates as $date => $timeEntries) {
+                //     $row[$date . '_time_in'] = implode(', ', array_column($timeEntries, 'time_in'));
+                //     $row[$date . '_time_out'] = implode(', ', array_column($timeEntries, 'time_out'));
+                // }
+
                 foreach ($dates as $date => $timeEntries) {
-                    $row[$date . '_time_in'] = implode(', ', array_column($timeEntries, 'time_in'));
-                    $row[$date . '_time_out'] = implode(', ', array_column($timeEntries, 'time_out'));
+                    $firstEntry = $timeEntries[0];
+
+                    $row[$date . '_time_in']  = [
+                        'id'   => $firstEntry['id'],
+                        'time' => implode(', ', array_column($timeEntries, 'time_in')),
+                    ];
+                    $row[$date . '_time_out'] = [
+                        'id'   => $firstEntry['id'],
+                        'time' => implode(', ', array_column($timeEntries, 'time_out')),
+                    ];
                 }
 
                 $flattenedData[] = $row;

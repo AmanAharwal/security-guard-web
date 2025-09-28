@@ -117,6 +117,18 @@ class EmployeeController extends Controller
                     return ($leave->type == 'Half Day') ? 0.5 : 1;
                 });
             $employee['pendingLeaveBalance'] =  max(0, $paidLeaveBalanceLimit - $approvedLeaves);
+
+            $VacationpaidLeaveBalanceLimit = (int) setting('vacation_leaves') ?: 10;
+            $approvedVacationLeaves = EmployeeLeave::where('employee_id', $employee->id)
+                ->where('status', 'Approved')
+                ->where('leave_type', 'Vacation Leave')
+                ->whereYear('date', $currentYear)
+                ->get()
+                ->sum(function ($leave) {
+                    return ($leave->type == 'Half Day') ? 0.5 : 1;
+                });
+
+            $employee['vacationLeaveBalance'] = max(0, $VacationpaidLeaveBalanceLimit - $approvedVacationLeaves);
         }
 
         $data = [

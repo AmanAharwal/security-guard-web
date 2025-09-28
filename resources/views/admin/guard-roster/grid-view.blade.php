@@ -93,10 +93,8 @@
                 @endforeach
             ],
             paging: true,
-            pageLength: 10,
+            pageLength: 50,
             lengthMenu: [10, 25, 50, 100],
-            processing: true,
-            serverSide: true,
             order: [[0, 'asc']]
         });
     })

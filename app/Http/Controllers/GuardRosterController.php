@@ -521,13 +521,100 @@ class GuardRosterController extends Controller
         return response()->json($leaves);
     }
 
+    // public function getGuardRosters(Request $request)
+    // {
+    //     $today = Carbon::now();
+    //     $fortnight = FortnightDates::whereDate('start_date', '<=', $today)->whereDate('end_date', '>=', $today)->first();
+
+    //     if (!$fortnight) {
+    //         return response()->json([
+    //             'data' => [],
+    //             'recordsTotal' => 0,
+    //             'recordsFiltered' => 0
+    //         ]);
+    //     }
+
+    //     $query = GuardRoster::with('user', 'client', 'clientSite', 'guardType')
+    //         ->whereBetween('date', [$fortnight->start_date, $fortnight->end_date]);
+
+    //     $userId = Auth::id();
+    //     if (Auth::user()->hasRole('Manager Operations')) {
+    //         $query->whereHas('clientSite', function ($query) use ($userId) {
+    //             $query->where('manager_id', $userId);
+    //         });
+    //     }
+
+    //     if ($request->has('search') && !empty($request->search['value'])) {
+    //         $searchValue = $request->search['value'];
+    //         $query->where(function ($query) use ($searchValue) {
+    //             $query->whereHas('user', function ($query) use ($searchValue) {
+    //                 $query->where('first_name', 'like', '%' . $searchValue . '%');
+    //             })
+    //                 ->orWhereHas('client', function ($query) use ($searchValue) {
+    //                     $query->where('client_name', 'like', '%' . $searchValue . '%');
+    //                 })
+    //                 ->orWhereHas('clientSite', function ($query) use ($searchValue) {
+    //                     $query->where('location_Code', 'like', '%' . $searchValue . '%');
+    //                 });
+    //         });
+    //     }
+
+    //     $guardRoasters = $query->get();
+    //     $formattedGuardRoasters = [];
+
+    //     foreach ($guardRoasters as $item) {
+    //         $date = $item->date;
+    //         $guard_id = $item->user->id;
+    //         $client_site_id = $item->client_site_id;
+
+    //         $guardTypes = $item->guardType->guard_type ?? '';
+    //         $formattedGuardRoasters[$guard_id][$client_site_id][$date][] = [
+    //             'guard_name' => $item->user->first_name . ' ' . optional($item->user)->surname,
+    //             'client_name' => $item->client->client_name,
+    //             'location_code' => $item->clientSite->location_code,
+    //             'time_in' => \Carbon\Carbon::parse($item->start_time)->format('h:iA'),
+    //             'time_out' => \Carbon\Carbon::parse($item->end_time)->format('h:iA'),
+    //             'guard_types' => $guardTypes,
+    //         ];
+    //     }
+
+    //     $flattenedData = [];
+    //     foreach ($formattedGuardRoasters as $guardId => $clientSites) {
+    //         foreach ($clientSites as $clientSiteId => $dates) {
+    //             $row = [
+    //                 'guard_name' => $dates[array_key_first($dates)][0]['guard_name'],
+    //                 'client_name' => $dates[array_key_first($dates)][0]['client_name'],
+    //                 'location_code' => $dates[array_key_first($dates)][0]['location_code'],
+    //                 'guardType' => implode(', ', array_column($dates[array_key_first($dates)], 'guard_types')),
+    //             ];
+
+    //             foreach ($dates as $date => $timeEntries) {
+    //                 $row[$date . '_time_in'] = implode(', ', array_column($timeEntries, 'time_in'));
+    //                 $row[$date . '_time_out'] = implode(', ', array_column($timeEntries, 'time_out'));
+    //             }
+
+    //             $flattenedData[] = $row;
+    //         }
+    //     }
+
+    //     return response()->json([
+    //         'draw' => intval($request->input('draw')),
+    //         'recordsTotal' => count($flattenedData),
+    //         'recordsFiltered' => count($flattenedData),
+    //         'data' => $flattenedData
+    //     ]);
+    // }
+
     public function getGuardRosters(Request $request)
     {
         $today = Carbon::now();
-        $fortnight = FortnightDates::whereDate('start_date', '<=', $today)->whereDate('end_date', '>=', $today)->first();
+        $fortnight = FortnightDates::whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today)
+            ->first();
 
         if (!$fortnight) {
             return response()->json([
+                'draw' => intval($request->input('draw')),
                 'data' => [],
                 'recordsTotal' => 0,
                 'recordsFiltered' => 0
@@ -554,14 +641,14 @@ class GuardRosterController extends Controller
                         $query->where('client_name', 'like', '%' . $searchValue . '%');
                     })
                     ->orWhereHas('clientSite', function ($query) use ($searchValue) {
-                        $query->where('location_Code', 'like', '%' . $searchValue . '%');
+                        $query->where('location_code', 'like', '%' . $searchValue . '%');
                     });
             });
         }
 
         $guardRoasters = $query->get();
-        $formattedGuardRoasters = [];
 
+        $formattedGuardRoasters = [];
         foreach ($guardRoasters as $item) {
             $date = $item->date;
             $guard_id = $item->user->id;
@@ -597,11 +684,17 @@ class GuardRosterController extends Controller
             }
         }
 
+        $totalRecords = count($flattenedData);
+        $start  = $request->input('start', 0);
+        $length = $request->input('length', 50);
+
+        $paginatedData = array_slice($flattenedData, $start, $length);
+
         return response()->json([
             'draw' => intval($request->input('draw')),
-            'recordsTotal' => count($flattenedData),
-            'recordsFiltered' => count($flattenedData),
-            'data' => $flattenedData
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $totalRecords,
+            'data' => $paginatedData
         ]);
     }
 

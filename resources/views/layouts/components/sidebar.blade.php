@@ -164,6 +164,8 @@
                                     Tax Threshold</a></li>
                             <li><a href="{{ route('guard-tax-threshold.index') }}" key="t-tui-calendar">Guard
                                     Tax Threshold</a></li>
+                            <li><a href="{{ route('activities.index') }}" key="t-tui-calendar">User Activity</a></li>
+                                    
                         </ul>
                     </li>
                 @endcanany

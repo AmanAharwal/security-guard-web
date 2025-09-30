@@ -219,6 +219,8 @@ class GuardRosterController extends Controller
             'end_date'       => $request->end_date,
         ]);
 
+        logActivity('Create Guard Roster', 'Created Guard Roster ID: ' . $guardRoster->id);
+
         return redirect()->route('guard-rosters.index')->with('success', 'Guard Roster created successfully.');
     }
 
@@ -318,6 +320,7 @@ class GuardRosterController extends Controller
         ]);
 
         $guardRoaster = GuardRoster::where('id', $id)->first();
+        $oldValues = $guardRoaster->toArray();
 
         $existingGuardRoaster = GuardRoster::where('guard_id', $request->guard_id)->where('date', $request->date)
             ->where('id', '!=', $guardRoaster->id)->first();
@@ -342,6 +345,13 @@ class GuardRosterController extends Controller
             'end_time'       => $end_time,
             'end_date'       => $request->end_date
         ]);
+        $newValues = $guardRoaster->toArray();
+
+        logActivity(
+            'Update Guard Roster',
+            'Updated Guard Roster ID: ' . $guardRoaster->id .
+                ' | Changes: ' . json_encode(array_diff_assoc($newValues, $oldValues))
+        );
 
         return redirect()->route('guard-rosters.index')->with('success', 'Guard Roster updated successfully.');
     }
@@ -383,6 +393,7 @@ class GuardRosterController extends Controller
             abort(403);
         }
         GuardRoster::where('id', $id)->delete();
+        logActivity('Delete Guard Roster', 'Deleted Guard Roster ID: ' . $id);
 
         return response()->json([
             'success' => true,
@@ -422,7 +433,9 @@ class GuardRosterController extends Controller
     public function importGuardRoster(Request $request)
     {
         $import = new GuardRoasterImport;
+        $fileName = $request->file('file')->getClientOriginalName();
         Excel::import($import, $request->file('file'));
+        logActivity('File Import', "Imported Guard Roster file: {$fileName}");
 
         session(['importData' => $import]);
         session()->flash('success', 'Guard roster imported successfully.');
@@ -435,6 +448,7 @@ class GuardRosterController extends Controller
     {
         $import = session('importData');
         $export = new GuardRoasterExport($import);
+        logActivity('File Export', 'Exported Guard Roster Imported Result CSV');
         return Excel::download($export, 'guard_import_results.csv');
     }
 
@@ -445,7 +459,7 @@ class GuardRosterController extends Controller
         $this->addGuardsSheet($spreadsheet);
         $this->addClientsSheet($spreadsheet);
         $this->addClientSitesSheet($spreadsheet);
-
+        logActivity('File Export', 'Exported Guard Roster CSV');
         $writer = new Xlsx($spreadsheet);
         $fileName = 'Guard_Roster_configuration.xlsx';
 

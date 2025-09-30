@@ -24,7 +24,7 @@ class UserController extends Controller
         $users = User::whereHas('roles', function ($query) use ($excludedRoles) {
             $query->whereNotIn('role_id', $excludedRoles);
         })->latest()->get();
-
+        logActivity('View Users', 'Viewed users list.');
         return view('admin.users.index', compact('users'));
     }
 
@@ -34,6 +34,7 @@ class UserController extends Controller
             abort(403);
         }
         $roles = Role::latest()->get();
+        logActivity('Create User', 'Opened create user form.');
 
         return view('admin.users.create', compact('roles'));
     }
@@ -78,6 +79,7 @@ class UserController extends Controller
 
             if (!$existingUser->hasRole($request->role) || $existingUser->hasRole('Employee')) {
                 $existingUser->assignRole($request->role);
+                logActivity('Update User', 'Updated existing user: ' . $existingUser->id);
             }
         } else {
             $newUser = User::create([
@@ -89,6 +91,7 @@ class UserController extends Controller
             ]);
 
             $newUser->assignRole($request->role);
+            logActivity('Create User', 'Created new user: ' . $newUser->id);
         }
 
         return redirect()->route('users.index')->with('success', 'User created or updated successfully.');
@@ -113,6 +116,7 @@ class UserController extends Controller
         $user = User::find($request->user_id);
         $user->status = $request->status;
         $user->save();
+        logActivity('Update User Status', 'Changed status for user ID: ' . $user->id . ' to ' . $request->status);
 
         return response()->json([
             'success' => true,
@@ -132,6 +136,7 @@ class UserController extends Controller
         }
         $user = User::where('id', $id)->first();
         $roles = Role::latest()->get();
+        logActivity('Edit User', 'Opened edit form for user: ' . $id);
 
         return view('admin.users.edit', compact('user', 'roles'));
     }
@@ -149,6 +154,7 @@ class UserController extends Controller
         ]);
 
         $user = User::findOrFail($id);
+        $oldValues = $user->toArray();
 
         $user->first_name   = $request->first_name;
         $user->last_name    = $request->last_name;
@@ -161,8 +167,8 @@ class UserController extends Controller
         $user->save();
 
         if (
-            Auth::user()->hasAnyRole(['Super Admin', 'Admin']) && 
-            Auth::id() != $user->id &&                             
+            Auth::user()->hasAnyRole(['Super Admin', 'Admin']) &&
+            Auth::id() != $user->id &&
             $request->filled('role')
         ) {
             $role = Role::find($request->role);
@@ -173,7 +179,12 @@ class UserController extends Controller
                 return redirect()->back()->with('error', 'Invalid role assignment.');
             }
         }
+        $newValues = $user->toArray();
 
+        logActivity(
+            'Update User',
+            'Updated user ID: ' . $id . ' | Changes: ' . json_encode(array_diff_assoc($newValues, $oldValues))
+        );
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
 
@@ -186,6 +197,7 @@ class UserController extends Controller
         }
 
         User::where('id', $id)->delete();
+        logActivity('Delete User', 'Deleted user ID: ' . $id);
 
         return response()->json([
             'success' => true,

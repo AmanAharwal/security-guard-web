@@ -52,7 +52,15 @@ class GuardRosterController extends Controller
 
         $clientSites = $query->get();
 
-        return view('admin.guard-roster.index', compact('fortnight', 'securityGuards', 'clients', 'clientSites'));
+        // return view('admin.guard-roster.index', compact('fortnight', 'securityGuards', 'clients', 'clientSites'));
+        return view('admin.guard-roster.index', [
+            'fortnight'      => $fortnight,
+            'securityGuards' => $securityGuards,
+            'clients'        => $clients,
+            'clientSites'    => $clientSites,
+            'selectedDate'   => null,   // or Carbon::today()->toDateString() if you want default
+            'selectedField'  => null,   // or any default value
+        ]);
     }
 
     public function getGuardRosterList(Request $request)

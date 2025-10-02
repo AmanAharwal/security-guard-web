@@ -97,8 +97,8 @@
             readonly />
     </div>
 </div>
-<input type="hidden" name="selected_date" value="{{ $selectedDate }}">
-<input type="hidden" name="selected_field" value="{{ $selectedField }}">
+<input type="hidden" name="selected_date" value="{{ $selectedDate ?? '' }}">
+<input type="hidden" name="selected_field" value="{{ $selectedField ?? '' }}">
 
 <div class="row mb-2">
     <div class="col-lg-6 mb-2">

@@ -13,6 +13,7 @@ use App\Models\UsersBankDetail;
 use App\Models\UsersKinDetail;
 use App\Models\UsersDocuments;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Models\Role;
 
 class User extends Authenticatable
 {
@@ -36,7 +37,12 @@ class User extends Authenticatable
         'status',
         'user_code',
         'is_statutory',
-        'current_time_zone'
+        'current_time_zone',
+        'previous_role_id',
+        'current_role_id',
+        'promotion_date',
+        'promotion_remarks',
+
     ];
 
     /**
@@ -118,5 +124,16 @@ class User extends Authenticatable
     public function employeeDeductionDetails()
     {
         return $this->hasMany(EmployeeDeduction::class, 'employee_id');
+    }
+
+     public function previousRole()
+    {
+        return $this->belongsTo(Role::class, 'previous_role_id');
+    }
+
+    // Relationship with current role
+    public function currentRole()
+    {
+        return $this->belongsTo(Role::class, 'current_role_id');
     }
 }

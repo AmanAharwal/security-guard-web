@@ -10,7 +10,7 @@
                     <div class="page-title-box d-sm-flex align-items-center justify-content-between">
                         <h4 class="mb-sm-0 font-size-18">Roles List</h4>
                         <div class="page-title-right">
-                            <a href="{{ route('roles-and-permissions.create') }}" class="btn btn-primary">Add New Role</a>
+                            <a href="{{ route('roles-and-permissions.role-list') }}" class="btn btn-primary">Back to roles</a>
                         </div>
                     </div>
                 </div>

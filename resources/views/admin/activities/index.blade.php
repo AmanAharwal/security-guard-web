@@ -21,7 +21,7 @@
 
                     <div class="card">
                         <div class="card-body">
-                            <table id="datatable" class="table table-bordered dt-responsive nowrap w-100">
+                            <table id="datatable" class="table table-bordered dt-responsive w-100">
                                 <thead>
                                     <tr>
                                         <th>User</th>
@@ -46,10 +46,6 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-
-                    <div class="d-flex justify-content-end">
-                        {{ $activities->links() }}
                     </div>
                 </div>
             </div>

@@ -467,6 +467,7 @@ class GuardRosterController extends Controller
         $this->addGuardsSheet($spreadsheet);
         $this->addClientsSheet($spreadsheet);
         $this->addClientSitesSheet($spreadsheet);
+        $this->addGuardTypesSheet($spreadsheet);
         logActivity('File Export', 'Exported Guard Roster CSV');
         $writer = new Xlsx($spreadsheet);
         $fileName = 'Guard_Roster_configuration.xlsx';
@@ -477,6 +478,42 @@ class GuardRosterController extends Controller
 
         $writer->save('php://output');
         exit;
+    }
+
+    protected function addGuardTypesSheet($spreadsheet)
+    {
+        $sheet = $spreadsheet->createSheet();
+        $sheet->setTitle('Guard-Types');
+
+        $headers = [
+            'ID',
+            'Guard Type',
+            'Regular Rate',
+            'Status',
+            'Created At',
+            'Updated At'
+        ];
+
+        $sheet->fromArray($headers, NULL, 'A1');
+
+        $guardTypes = RateMaster::get();
+
+        foreach ($guardTypes as $key => $guardType) {
+            $data = [
+                $guardType->id,
+                $guardType->guard_type ?? '',
+                $guardType->regular_rate ?? '',
+                $guardType->status ?? 'Active',
+                $guardType->created_at ? $guardType->created_at->format('Y-m-d H:i:s') : '',
+                $guardType->updated_at ? $guardType->updated_at->format('Y-m-d H:i:s') : ''
+            ];
+
+            $sheet->fromArray($data, NULL, 'A' . ($key + 2));
+        }
+
+        foreach (range('A', 'G') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
     }
 
     protected function addGuardsSheet($spreadsheet)

@@ -14,6 +14,7 @@ use App\Models\UsersKinDetail;
 use App\Models\UsersDocuments;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Models\Role;
+use Carbon\Carbon;
 
 class User extends Authenticatable
 {
@@ -42,7 +43,6 @@ class User extends Authenticatable
         'current_role_id',
         'promotion_date',
         'promotion_remarks',
-
     ];
 
     /**
@@ -118,7 +118,7 @@ class User extends Authenticatable
 
     public function guardRoasters()
     {
-        return $this->hasMany(GuardRoster::class, 'guard_id'); // Assuming 'guard_id' is the foreign key
+        return $this->hasMany(GuardRoster::class, 'guard_id');
     }
 
     public function employeeDeductionDetails()
@@ -126,14 +126,18 @@ class User extends Authenticatable
         return $this->hasMany(EmployeeDeduction::class, 'employee_id');
     }
 
-     public function previousRole()
+    public function previousRole()
     {
         return $this->belongsTo(Role::class, 'previous_role_id');
     }
 
-    // Relationship with current role
     public function currentRole()
     {
         return $this->belongsTo(Role::class, 'current_role_id');
+    }
+
+    public function getPromotionDateAttribute($value)
+    {
+        return $value ? Carbon::parse($value) : null;
     }
 }

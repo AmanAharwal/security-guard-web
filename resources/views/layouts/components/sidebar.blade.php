@@ -176,9 +176,9 @@
                                 <li><a href="{{ route('guard-tax-threshold.index') }}" key="t-tui-calendar">Guard
                                         Tax Threshold</a></li>
                             @endcan
-                            @can('view user activity')
+                            {{-- @can('view user activity')
                                 <li><a href="{{ route('activities.index') }}" key="t-tui-calendar">User Activity</a></li>
-                            @endcan
+                            @endcan --}}
                         </ul>
                     </li>
                 @endcanany

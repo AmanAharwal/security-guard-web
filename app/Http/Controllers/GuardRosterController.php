@@ -227,7 +227,7 @@ class GuardRosterController extends Controller
             'end_date'       => $request->end_date,
         ]);
 
-        logActivity('Create Guard Roster', 'Created Guard Roster ID: ' . $guardRoster->id);
+        logActivity('Create Guard Roster', 'Created Guard Roster ID: ' . $request->guard_id);
 
         return redirect()->route('guard-rosters.index')->with('success', 'Guard Roster created successfully.');
     }

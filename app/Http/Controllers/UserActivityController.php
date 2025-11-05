@@ -8,7 +8,7 @@ class UserActivityController extends Controller
 {
     public function index()
     {
-        $activities = UserActivity::latest()->paginate(20);
+        $activities = UserActivity::latest()->get();
         return view('admin.activities.index', compact('activities'));
     }
 }

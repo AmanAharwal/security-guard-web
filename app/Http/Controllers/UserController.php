@@ -109,7 +109,7 @@ class UserController extends Controller
             ->first();
 
         $userId = optional($existingUser)->id;
-
+        
         $request->validate([
             'first_name' => 'required',
             'last_name'  => 'required',

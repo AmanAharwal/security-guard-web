@@ -502,6 +502,7 @@ class SecurityGuardController extends Controller
 
         $guardArray = $guards->map(function ($guard) {
             return [
+                "Guard Code"            => $guard->user_code,
                 "First Name"            => $guard->first_name,
                 "Middle Name"           => $guard->middle_name,
                 "Surname"               => $guard->surname,
@@ -559,6 +560,7 @@ class SecurityGuardController extends Controller
         })->toArray();
 
         $headers = [
+            "Guard Code",
             "First Name",
             "Middle Name",
             "Surname",
